@@ -13,12 +13,16 @@ def palindrome(number):
 
     # check numbers
     if original_num != reverse_num:
-        print("Given number is a palindrome")
-    else:
+        # print("Given number is a palindrome")
         print("Given number is not a palindrome")
+    else:
+        # print("Given number is not a palindrome")
+        print("Given number is a palindrome")
 
-palindrome('11881118811')
-palindrome(125542628)
-palindrome(123789987321)
-
+a = palindrome('11881118811')
+print(f'a: {a}')
+b = palindrome(125542628)
+print(f'b: {b}')
+c = palindrome(123789987321)
+print(f'c: {c}')
 # NOT COMPLETED!
