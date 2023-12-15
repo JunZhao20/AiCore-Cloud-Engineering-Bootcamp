@@ -1,0 +1,15 @@
+first_name: Jun
+last_name: Zhao
+age: !!int 22
+email: !!str junzhao1111@gmail.com
+
+address:
+  street: !!str 123 wheelie bin drive
+  city: Newcastle
+  state: Tyne and wear
+  zip: DP4 4TM
+
+hobbies:
+  - Pool
+  - Programming
+  - Gym
