@@ -198,3 +198,105 @@ UPDATE payments_this_year
 
 ALTER TABLE payments_this_year
     RENAME amount TO total_payment_taken
+
+
+SELECT country_id, 
+    city, 
+    city_id
+FROM city
+WHERE country_id = 6
+
+SELECT * FROM city
+
+SELECT address_id,
+       address,
+       address2,
+       district,
+       city_id,
+       postal_code
+FROM 
+    address
+WHERE city_id IN (20, 43, 45, 128, 161, 165, 289, 334, 424, 454, 457, 524, 567);
+
+SELECT country.country_id ,
+       country,
+       city.city_id,
+       address,
+       address2,
+       postal_code,
+       district
+FROM
+    country
+INNER JOIN
+    city ON country.country_id = city.country_id
+INNER JOIN
+    address ON address.city_id = city.city_id
+WHERE
+    country = 'Argentina';
+
+SELECT * FROM address
+
+SELECT * FROM store
+
+-- Find the addresses of all the stores in the Pagila database
+SELECT store_id,
+    address.address_id,
+    address.address
+    
+FROM 
+    store
+INNER JOIN
+    address ON address.address_id = store.address_id
+
+-- Return the first names, last names, addresses, districts and postal code for all the staff in the database
+SELECT first_name,
+    last_name,
+    address.address,
+    address.district,
+    address.postal_code
+FROM 
+    staff
+INNER JOIN
+    address ON address.address_id = staff.address_id
+
+SELECT * FROM customer
+SELECT * FROM rental
+
+-- Return the first names, last names, addresses, districts and cities of customers who have rented a film
+SELECT first_name,
+    last_name,
+    address.address,
+    address.district,
+    city.city
+FROM
+    customer
+INNER JOIN
+    address ON address.address_id = customer.address_id 
+INNER JOIN
+    city ON city.city_id = address.city_id
+INNER JOIN
+    rental ON rental.customer_id = customer.customer_id
+
+-- Return the first names, last names, addresses, districts and cities of customers who have rented a film between 26/05/2005 and 29/05/2005. Limit the results to 25 customers and sort the results by the last names in ascending order
+SELECT first_name,
+    last_name,
+    address.address,
+    address.district,
+    city.city
+FROM
+    customer
+INNER JOIN
+    address ON address.address_id = customer.address_id 
+INNER JOIN
+    city ON city.city_id = address.city_id
+INNER JOIN
+    rental ON rental.customer_id = customer.customer_id
+WHERE
+    return_date::DATE BETWEEN '2005-05-26' AND '2005-05-29'
+ORDER BY
+    customer.last_name ASC
+LIMIT
+    25
+
+
+
