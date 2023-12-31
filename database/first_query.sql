@@ -300,3 +300,66 @@ LIMIT
 
 
 
+SELECT DATE_TRUNC('month',payment_date ) FROM payments_this_year
+
+SELECT EXTRACT('year' from payment_date) as day_take_payment
+FROM payment
+
+-- counts films with no return dates
+SELECT COUNT(*)
+FROM 
+    rental
+WHERE
+    return_date is NULL
+
+-- Sum of payments the business received
+SELECT SUM(amount)
+FROM
+    payment
+
+-- sum of payments that the business has received between the dates 25/01/2007 and 29/01/2007
+SELECT SUM(amount)
+FROM payment
+WHERE
+    DATE_TRUNC('day', payment_date) BETWEEN '2007-01-25' AND '2007-01-29'
+
+--  last transaction over $10 made
+SELECT payment_date::DATE,
+    amount
+FROM
+    payment
+WHERE
+    amount > 10
+ORDER BY
+    payment_date DESC
+LIMIT
+    1
+
+-- the price of the highest value film the business has
+SELECT amount
+FROM
+    payment
+ORDER BY
+    amount DESC
+Limit
+    1
+
+-- the average length of films who's rental cost is under $2.99
+SELECT ROUND(AVG(length), 2) AS avg_film_length
+FROM 
+    film
+
+WHERE
+    rental_rate < 2.99
+
+
+SELECT title, 
+       release_year, 
+       rental_rate,
+CASE
+    WHEN rental_rate > 0 AND rental_rate < 2.99 THEN 'discount'
+    WHEN rental_rate >= 2.99 AND rental_rate < 4.99 THEN 'regular'
+    ELSE 'premium'
+END AS quality
+FROM 
+    film;
