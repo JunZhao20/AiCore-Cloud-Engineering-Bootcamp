@@ -363,3 +363,25 @@ CASE
 END AS quality
 FROM 
     film;
+
+SELECT customer_id,
+    COUNT(rental_date) AS total_number_of_rentals
+FROM
+    rental
+GROUP BY
+    customer_id
+ORDER BY
+    total_number_of_rentals DESC
+LIMIT
+    5
+
+SELECT customer_id,
+    COUNT(rental_date) AS total_number_of_rentals,
+    staff_id,
+    COUNT(inventory_id) AS number_of_unique_rentals
+FROM
+    rental
+GROUP BY
+    customer_id, staff_id, inventory_id
+ORDER BY
+    customer_id DESC, staff_id DESC
