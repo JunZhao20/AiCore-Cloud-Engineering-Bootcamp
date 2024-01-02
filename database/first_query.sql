@@ -385,3 +385,89 @@ GROUP BY
     customer_id, staff_id, inventory_id
 ORDER BY
     customer_id DESC, staff_id DESC
+
+-- unique special features
+SELECT special_features 
+FROM 
+    film
+GROUP BY special_features
+
+-- 3 days having the most profit
+SELECT payment_date::DATE,
+    SUM(amount) AS profit
+FROM  
+    payment
+GROUP BY
+    payment_date::DATE
+ORDER BY
+    profit DESC
+LIMIT
+    3
+
+-- total sales per day, along with the number of moves rented for that day
+SELECT payment_date::DATE AS pay_per_day,
+     SUM(amount) AS profit_per_day,
+     COUNT(payment_id) AS rented_movies_per_day
+FROM
+    payment
+GROUP BY
+    pay_per_day
+
+--  all customers who have spent over $100 over the course of their membership
+SELECT customer.customer_id
+FROM
+    payment
+INNER JOIN
+    customer ON customer.customer_id = payment.customer_id
+GROUP BY
+    customer.customer_id
+HAVING
+    SUM(amount) > 100
+    AND
+    activebool = TRUE
+
+-- the last names of actors, as well as how many actors have that last name.
+SELECT last_name,  COUNT(first_name)
+FROM 
+    actor
+GROUP BY
+    last_name
+
+-- total number of customers in each store
+SELECT store_id, 
+    COUNT(customer_id) as num_customer_in_store
+FROM
+    customer
+GROUP BY
+    store_id
+
+SELECT rental.customer_id, 
+    rental_rate, 
+    first_name, 
+    last_name
+FROM
+    rental
+INNER JOIN 
+    customer ON customer.customer_id = rental.customer_id
+INNER JOIN
+    film ON film.last_update = rental.last_update
+GROUP BY
+    rental.customer_id
+ORDER BY
+    return_date ASC
+
+
+SELECT customer_id,payment_date,rental_rate
+FROM
+    payment
+INNER JOIN
+	film
+GROUP BY
+    customer_id,
+	payment_date
+ORDER BY
+    payment_date ASC
+
+SELECT * FROM rental
+
+SELECT last_update,payment_date from rental,payment
