@@ -715,3 +715,49 @@ ORDER BY
 
 SELECT * FROM inventory
 SELECT * FROM rental
+
+
+----------------------------
+
+
+-- CTE
+-- selects all films and film titles
+WITH all_films AS (
+	SELECT title, film_id
+	FROM film
+	WHERE film_id IN(
+		SELECT film_id
+		FROM inventory
+		WHERE film.film_id = inventory.film_id
+	)
+), count_each_film AS (
+	SELECT title, COUNT(film_id) AS count_film
+	FROM all_films
+	GROUP BY
+		title
+)SELECT title, count_film 
+FROM 
+	count_each_film
+GROUP BY
+	title,
+	count_film
+-- HAVING count_film = 1
+
+
+WITH FilmTable AS (
+    SELECT film_id, title
+    FROM film
+),
+
+RentalCounts AS (
+    SELECT f.film_id, COUNT(r.inventory_id) AS num_of_films
+    FROM FilmTable f
+    INNER JOIN inventory i ON i.film_id = f.film_id
+    INNER JOIN rental r ON r.inventory_id = i.inventory_id
+    GROUP BY f.film_id
+)
+
+SELECT ft.title, rc.num_of_films
+FROM FilmTable ft
+JOIN RentalCounts rc ON ft.film_id = rc.film_id
+ORDER BY rc.num_of_films DESC;
