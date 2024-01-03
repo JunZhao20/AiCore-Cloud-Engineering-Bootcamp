@@ -649,3 +649,69 @@ WHERE table_name = 'rental'
 
 ALTER TABLE rental
 DROP CONSTRAINT rental_pkey CASCADE;
+
+-- CTE
+-- WITH avg_rental_rate AS (
+--     SELECT AVG(rental_rate)
+--     FROM film
+-- ), unique_rate AS (
+--     SELECT DISTINCT(rental_rate) AS rental_rates
+--     FROM film
+-- ), average_amount_customers_rent AS(
+--     SELECT customer_id, AVG(amount) AS avg_amount
+--     FROM payment
+--     WHERE amount IN(
+--         SELECT rental_rates
+--         FROM avg_rental_rate
+--     )
+--     GROUP BY
+--         customer_id
+-- )
+
+WITH distinct_rental_rates AS (
+    SELECT DISTINCT(rental_rate) AS rental_rates
+    FROM film
+),average_rental_rate AS (
+    SELECT AVG(rental_rate) AS avg_rental_rate
+    FROM film
+),average_customer_rental_payment AS (
+    SELECT customer_id,
+       AVG(amount) AS average_rental_payment
+    FROM 
+        payment
+    WHERE 
+        amount IN 
+        (
+            SELECT rental_rates 
+            FROM distinct_rental_rates
+        )
+    GROUP BY 
+        customer_id
+)SELECT customer_id,
+       ROUND(average_rental_payment, 2) AS average_rental_payment
+FROM 
+    average_customer_rental_payment
+WHERE
+    average_rental_payment > 
+    (
+        SELECT avg_rental_rate
+        FROM average_rental_rate
+    )
+ORDER BY 
+    average_rental_payment DESC;
+
+-- find the number of times each film was rented. Order by descending.
+SELECT title, COUNT(inventory.film_id) AS num_of_films
+FROM film
+INNER JOIN
+    inventory ON inventory.film_id = film.film_id
+INNER JOIN
+    rental ON rental.inventory_id = inventory.inventory_id
+GROUP BY
+    title
+ORDER BY
+    num_of_films DESC
+
+
+SELECT * FROM inventory
+SELECT * FROM rental
