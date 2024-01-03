@@ -441,33 +441,151 @@ FROM
 GROUP BY
     store_id
 
-SELECT rental.customer_id, 
-    rental_rate, 
-    first_name, 
+-- the earliest order placed per customer? Return the customer ids, the rental rates, and the names
+SELECT payment.customer_id,
+    payment_date,
+    rental_rate,
+    first_name,
     last_name
-FROM
-    rental
-INNER JOIN 
-    customer ON customer.customer_id = rental.customer_id
-INNER JOIN
-    film ON film.last_update = rental.last_update
-GROUP BY
-    rental.customer_id
-ORDER BY
-    return_date ASC
-
-
-SELECT customer_id,payment_date,rental_rate
 FROM
     payment
 INNER JOIN
-	film
+	rental ON rental.customer_id = payment.customer_id
+INNER JOIN
+    inventory ON inventory.inventory_id = rental.inventory_id
+INNER JOIN
+    film ON film.film_id = inventory.film_id
+INNER JOIN
+    customer ON customer.customer_id = payment.customer_id
 GROUP BY
-    customer_id,
-	payment_date
+    payment.customer_id,
+	payment_date,
+    rental_rate,
+    first_name,
+    last_name
 ORDER BY
     payment_date ASC
 
-SELECT * FROM rental
+-- the largest order placed per customer? Return the customer ids and the amounts
+SELECT customer_id, 
+    SUM(amount) as total
+FROM
+    payment
+GROUP BY
+    customer_id
+ORDER BY
+    total DESC
 
-SELECT last_update,payment_date from rental,payment
+
+
+
+SELECT rating,
+       ROUND(AVG(replacement_cost), 2) AS avg_rating_replacement_cost,
+       (
+            SELECT ROUND(AVG(replacement_cost),2) AS avg_film_replacement_cost
+            FROM film
+       )
+FROM
+    film
+GROUP BY
+    rating
+HAVING
+    AVG(replacement_cost) > 
+    (
+        SELECT AVG(replacement_cost)
+        FROM film
+    );
+
+SELECT actor_id,
+       first_name,
+       last_name
+FROM 
+    actor
+WHERE 
+    actor_id IN 
+    (
+        SELECT actor_id
+        FROM film_actor
+        WHERE film_id = 2
+    );
+
+
+-- Return the ids, title and release year of all films which have the category 'Animation'
+SELECT film.film_id,
+    title,
+    release_year
+
+FROM
+    film
+INNER JOIN
+    film_category ON film_category.film_id = film.film_id
+WHERE
+    category_id IN(
+        SELECT category_id
+        FROM category 
+        WHERE name = 'Animation'
+    )
+
+-- Return the first name, last name, and email of all customers in Canada
+SELECT first_name,
+    last_name,
+    email
+FROM
+    customer
+WHERE
+    address_id IN (
+        SELECT address_id
+        FROM address
+        WHERE city_id IN (
+            SELECT city_id
+            FROM city
+            WHERE country_id IN (
+                SELECT country_id
+                FROM country
+                WHERE country = 'Canada'
+            )
+        )
+    )
+
+-- Return the titles of films with movies starting with A or I and are not in the Italian, French or Spanish Language (all films are in English, but write the query as the practical requests)
+SELECT title
+FROM
+    film
+WHERE
+    title LIKE 'A%' OR title LIKE 'I%'
+    AND language_id NOT IN
+    (
+        SELECT language_id
+        FROM language
+        WHERE name IN ('Italian', 'French', 'Spanish')
+
+    )
+
+-- Return the average film length per rating
+SELECT rating,
+    ROUND(AVG(length), 2) AS avg_length
+FROM 
+    film
+GROUP BY
+    rating
+
+-- the average number of sales per day for each staff
+
+SELECT staff_id,
+    payment_date::DATE,
+     ROUND(AVG(derived_count_payment.count_payment)) AS avg_sale
+FROM 
+    (
+        SELECT staff_id, COUNT(payment_id) AS count_payment, payment_date::DATE
+        FROM payment
+        GROUP BY
+            staff_id,
+            payment_date::DATE
+    ) AS derived_count_payment
+GROUP BY
+    staff_id,
+    payment_date::DATE
+ORDER BY
+    payment_date::DATE ASC
+    
+
