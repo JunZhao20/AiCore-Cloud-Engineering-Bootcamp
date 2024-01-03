@@ -587,5 +587,65 @@ GROUP BY
     payment_date::DATE
 ORDER BY
     payment_date::DATE ASC
-    
 
+SELECT customer_id,
+       first_name,
+       last_name,
+       (
+            SELECT ROUND(AVG(amount), 2) AS average_customer_payment
+            FROM payment 
+            WHERE customer.customer_id = payment.customer_id
+        )
+FROM
+    customer; 
+
+CREATE TABLE IF NOT EXISTS rental_replacements (
+    replacement_id SERIAL PRIMARY KEY,
+    amount NUMERIC(8,2) NOT NULL,
+    payment_date TIMESTAMP NOT NULL,
+    staff_id INTEGER NOT NULL
+)
+
+INSERT INTO rental_replacements (amount, payment_date, staff_id)
+(
+    SELECT amount, payment_date, staff_id
+    FROM
+        payment
+    WHERE
+        amount >= 9.99
+)
+
+SELECT * FROM rental_replacements
+
+UPDATE rental
+SET 
+    staff_id = 1
+WHERE 
+    rental_id IN
+    (
+        SELECT rental_id
+        FROM 
+            payment
+        WHERE
+            amount = '0.99' 
+            AND staff_id = 2
+    );
+
+DELETE FROM rental
+WHERE 
+    rental_id IN
+    (
+        SELECT rental_id
+        FROM 
+            payment
+        GROUP BY 
+            rental_id
+        HAVING
+            MIN(payment_date) <=  '2007-01-29' 
+    );
+
+SELECT * FROM information_schema.table_constraints
+WHERE table_name = 'rental'
+
+ALTER TABLE rental
+DROP CONSTRAINT rental_pkey CASCADE;
