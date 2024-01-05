@@ -701,7 +701,7 @@ ORDER BY
     average_rental_payment DESC;
 
 -- find the number of times each film was rented. Order by descending.
-SELECT title, COUNT(inventory.film_id) AS num_of_films
+SELECT title, COUNT(film.film_id) AS num_of_films
 FROM film
 INNER JOIN
     inventory ON inventory.film_id = film.film_id
@@ -710,7 +710,7 @@ INNER JOIN
 GROUP BY
     title
 ORDER BY
-    num_of_films DESC
+    num_of_films ASC
 
 
 SELECT * FROM inventory
@@ -725,14 +725,14 @@ SELECT * FROM rental
 WITH all_films AS (
 	SELECT title, film_id
 	FROM film
-	WHERE film_id IN(
-		SELECT film_id
-		FROM inventory
-		WHERE film.film_id = inventory.film_id
-	)
+
 ), count_each_film AS (
-	SELECT title, COUNT(film_id) AS count_film
+	SELECT title, COUNT(inventory.film_id) AS count_film
 	FROM all_films
+    INNER JOIN
+        inventory ON inventory.film_id = all_films.film_id
+    INNER JOIN
+    rental ON rental.inventory_id = inventory.inventory_id
 	GROUP BY
 		title
 )SELECT title, count_film 
@@ -740,24 +740,29 @@ FROM
 	count_each_film
 GROUP BY
 	title,
-	count_film
--- HAVING count_film = 1
+    count_film
+ORDER BY
+    count_film ASC
+
 
 
 WITH FilmTable AS (
     SELECT film_id, title
     FROM film
 ),
-
 RentalCounts AS (
-    SELECT f.film_id, COUNT(r.inventory_id) AS num_of_films
-    FROM FilmTable f
-    INNER JOIN inventory i ON i.film_id = f.film_id
-    INNER JOIN rental r ON r.inventory_id = i.inventory_id
-    GROUP BY f.film_id
+    SELECT
+        f.film_id,
+        (
+        SELECT COUNT(*)
+         FROM inventory AS i
+         WHERE i.film_id = f.film_id
+         AND i.inventory_id IN (SELECT inventory_id FROM rental)
+        ) AS num_of_films
+    FROM FilmTable AS f
 )
 
 SELECT ft.title, rc.num_of_films
-FROM FilmTable ft
+FROM FilmTable AS ft
 JOIN RentalCounts rc ON ft.film_id = rc.film_id
 ORDER BY rc.num_of_films DESC;
